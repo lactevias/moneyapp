@@ -1,0 +1,19 @@
+# Этот файл говорит Netlify, как собрать и запустить ваш проект.
+[build]
+  # Команда, которую Netlify выполнит для сборки вашего сайта.
+  command = "npm run build"
+  # Папка, в которую Vite сложит готовый сайт.
+  publish = "dist/client"
+
+# Это правило перенаправляет все запросы к API на ваш серверный код.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Это правило говорит Netlify, как запустить ваш серверный код (Express).
+# Netlify превратит его в "серверлесную функцию".
+[[functions]]
+  name = "api"
+  directory = "dist"
+  node_bundler = "esbuild"
