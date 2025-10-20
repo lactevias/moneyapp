@@ -16,6 +16,8 @@
 # Serverless function configuration.
 # This tells Netlify where to find your compiled server code.
 [functions]
-  name = "api"
   directory = "dist"
+
+[functions.api]
   node_bundler = "esbuild"
+  
