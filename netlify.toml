@@ -1,18 +1,21 @@
+# Build settings for Netlify.
 [build]
-  # Команда, которую Netlify выполнит для сборки вашего сайта.
+  # This command builds both the client and the server.
   command = "npm run build"
-  # Папка, в которую Vite сложит готовый сайт.
+  # This is the output directory for the client-side assets.
   publish = "dist/client"
 
-# Это правило перенаправляет все запросы к API на ваш серверный код.
+# Redirect rule for API calls.
+# This ensures that any request to '/api/*' on your live site
+# is correctly routed to your serverless function.
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
 
-# Это правило говорит Netlify, как запустить ваш серверный код (Express).
-# Netlify превратит его в "серверлесную функцию".
-[[functions]]
+# Serverless function configuration.
+# This tells Netlify where to find your compiled server code.
+[functions]
   name = "api"
   directory = "dist"
   node_bundler = "esbuild"
