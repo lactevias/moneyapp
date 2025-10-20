@@ -1,27 +1,33 @@
-// Import the functions you need from the SDKs you need
+// ШАГ 1: ВСТАВЬТЕ ВАШ firebaseConfig, СКОПИРОВАННЫЙ ИЗ FIREBASE CONSOLE
+// Он должен выглядеть примерно так:
+/*
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "your-project-id.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project-id.appspot.com",
+  messagingSenderId: "...",
+  appId: "1:..."
+};
+*/
+const firebaseConfig = {
+  apiKey: "ПОКА НЕ ВСТАВЛЕНО",
+  authDomain: "ПОКА НЕ ВСТАВЛЕНО",
+  projectId: "ПОКА НЕ ВСТАВЛЕНО",
+  storageBucket: "ПОКА НЕ ВСТАВЛЕНО",
+  messagingSenderId: "ПОКА НЕ ВСТАВЛЕНО",
+  appId: "ПОКА НЕ ВСТАВЛЕНО"
+};
+
+
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// =================================================================================
-// ======================== ШАГ 1: ВСТАВЬТЕ ВАШ КОНФИГ ЗДЕСЬ ========================
-// =================================================================================
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-// =================================================================================
-// =================================================================================
-
-
-// Initialize Firebase
+// Инициализация Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
 
-export { db, auth };
+// Экспорт сервисов для использования в приложении
+export const db = getFirestore(app);
+export const auth = getAuth(app);
 
