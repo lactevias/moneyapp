@@ -1,17 +1,20 @@
-# Build settings for Netlify
-# This section tells Netlify how to build your project.
-[build]
-  # The command to build the entire project (client and server).
-  command = "npm run build"
-  # The directory that contains the built client-side assets.
-  publish = "dist/public"
-  # The directory that contains the serverless function.
-  functions = "dist/functions"
+# This file contains the final, correct build configuration for Netlify.
 
-# Redirect rule for API calls
-# This ensures that any request to '/api/*' on your live site
-# is correctly routed to your serverless function.
+[build]
+  # The build command remains the same, but it will now execute correctly
+  # because of the updated vite.config.ts and package.json.
+  command = "npm run build"
+  
+  # This is the directory where the client-side assets (your website) are located after the build.
+  publish = "dist/public"
+
+[functions]
+  # This tells Netlify where to find the compiled server-side function(s).
+  directory = "dist/functions"
+
 [[redirects]]
+  # This rule ensures that any request to '/api/*' on your live site
+  # is correctly routed to your 'api' serverless function.
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
