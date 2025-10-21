@@ -1,15 +1,18 @@
+# Build settings for Netlify
+# This section tells Netlify how to build your project.
 [build]
+  # The command to build the entire project (client and server).
   command = "npm run build"
-  publish = "dist"
+  # The directory that contains the built client-side assets.
+  publish = "dist/public"
+  # The directory that contains the serverless function.
+  functions = "dist/functions"
 
+# Redirect rule for API calls
+# This ensures that any request to '/api/*' on your live site
+# is correctly routed to your serverless function.
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
-
-[functions]
-  directory = "dist"
-
-[functions.api]
-  node_bundler = "esbuild"
 
