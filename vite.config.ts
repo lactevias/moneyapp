@@ -4,16 +4,18 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Define the project root for the client-side application
+  root: 'clients',
   plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './clients/src'),
     },
   },
-  server: {
-    proxy: {
-      '/api': 'http://localhost:5000'
-    }
-  }
+  build: {
+    // Define the output directory relative to the project root
+    outDir: '../dist/public',
+    emptyOutDir: true,
+  },
 });
 
