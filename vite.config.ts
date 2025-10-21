@@ -2,22 +2,24 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// https://vitejs.dev/config/
+// This is the definitive Vite configuration for this project.
 export default defineConfig({
-  // Explicitly set the project root for the client application.
-  // This is the key fix that makes all path aliases work correctly.
+  // Sets the project root to the 'clients' directory.
+  // This is the most critical fix, making all other paths work correctly.
   root: 'clients',
+  
   plugins: [react()],
+
   resolve: {
+    // This alias now works reliably because the 'root' is correctly set.
     alias: {
-      // Define the '@' alias to point to the 'src' folder inside our root.
-      '@': path.resolve(__dirname, 'clients/src'),
+      '@': path.resolve(__dirname, './clients/src'),
     },
   },
+
   build: {
-    // Specify the output directory relative to the project's root folder.
+    // Specifies the output directory relative to the project root (not the 'clients' root).
     outDir: '../dist/public',
-    // It's a good practice to clear the output directory before building.
     emptyOutDir: true,
   },
 });
