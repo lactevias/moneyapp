@@ -3,35 +3,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, TrendingUp, TrendingDown, FileText, Briefcase } from "lucide-react";
 import type { Transaction, TaxPayment } from "@/types";
 import { formatCurrency, calculateMultiCurrencyTotal } from "@/lib/currency";
-import TaxPaymentWidget from "./TaxPaymentWidget";
+// import TaxPaymentWidget from "./TaxPaymentWidget"; // <-- ИЗМЕНЕНИЕ 1: УДАЛЕНО
 import BusinessCalculators from "./BusinessCalculators";
 import ExpenseTrendsAnalyzer from "./ExpenseTrendsAnalyzer";
 import MoneyFlow from "./MoneyFlow";
 
 interface EnhancedBusinessDashboardProps {
-  totalBalance?: number; // Changed to optional
-  totalBalanceByCurrency?: Record<string, number>; // Changed to optional
-  income?: number; // Changed to optional
-  expenses?: number; // Changed to optional
-  netProfit?: number; // Changed to optional
-  transactions: Transaction[]; // Keep required
+  totalBalance?: number;
+  totalBalanceByCurrency?: Record<string, number>;
+  income?: number;
+  expenses?: number;
+  netProfit?: number;
+  transactions: Transaction[];
   taxPayments?: TaxPayment[];
   currentSpace?: 'personal' | 'business';
 }
 
 export default function EnhancedBusinessDashboard({
-  totalBalance = 0, // Added default value
-  totalBalanceByCurrency = {}, // Added default value
-  income = 0, // Added default value
-  expenses = 0, // Added default value
-  netProfit = 0, // Added default value
-  transactions = [], // Added default value
+  totalBalance = 0,
+  totalBalanceByCurrency = {},
+  income = 0,
+  expenses = 0,
+  netProfit = 0,
+  transactions = [],
   taxPayments = [],
   currentSpace = 'business'
 }: EnhancedBusinessDashboardProps) {
 
   // Calculate expense categories (converted to RUB for comparison)
-  const categoryTotals = (transactions || []) // Added guard
+  const categoryTotals = (transactions || [])
     .filter(t => t.type === 'expense' && t.space === currentSpace)
     .reduce((acc, t) => {
       const rubAmount = calculateMultiCurrencyTotal([{ amount: t.amount, currency: t.currency }]);
@@ -90,7 +90,7 @@ export default function EnhancedBusinessDashboard({
 
       {/* Tax and Calculators Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TaxPaymentWidget taxPayments={taxPayments} />
+        {/* <TaxPaymentWidget taxPayments={taxPayments} /> */} {/* <-- ИЗМЕНЕНИЕ 2: Закомментировано */}
         <BusinessCalculators />
       </div>
     </div>
