@@ -3,7 +3,7 @@ import { AppSidebar } from './components/AppSidebar';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
-import { SidebarProvider } from "@/components/ui/sidebar"; // <-- ВОТ ИЗМЕНЕНИЕ 1
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 // A placeholder for your main content components
 const MainContent = ({ activeTab, currentSpace }: { activeTab: string, currentSpace: string }) => {
@@ -73,7 +73,7 @@ export function App() {
 
     const handler = setTimeout(() => {
       const docRef = doc(db, 'users', userId);
-      setDoc(docRef, { appData }).then(() => {
+_      setDoc(docRef, { appData }).then(() => {
         console.log('Data saved.');
       });
     }, 1000); // Save 1 second after the last change
@@ -98,7 +98,7 @@ export function App() {
   }
 
   return (
-    <SidebarProvider> {/* <-- ВОТ ИЗМЕНЕНИЕ 2 (начало) */}
+    <SidebarProvider>
       <div className="flex h-screen bg-background">
         <AppSidebar
           activeTab={appData.activeTab}
@@ -116,6 +116,6 @@ export function App() {
           <MainContent activeTab={appData.activeTab} currentSpace={appData.currentSpace} />
         </main>
       </div>
-    </SidebarProvider> {/* <-- ВОТ ИЗМЕНЕНИЕ 2 (конец) */}
+    </SidebarProvider>
   );
 }
