@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AppSidebar } from './components/AppSidebar';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-import { db, auth } from 'firebaseConfig';
+import { db, auth } from './firebaseConfig';
 
 // A placeholder for your main content components
 const MainContent = ({ activeTab, currentSpace }: { activeTab: string, currentSpace: string }) => {
