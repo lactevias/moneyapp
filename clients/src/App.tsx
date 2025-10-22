@@ -4,10 +4,8 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { EnhancedDashboard } from './components/EnhancedDashboard'; // <-- ИЗМЕНЕНИЕ 1
-import { EnhancedBusinessDashboard } from './components/EnhancedBusinessDashboard'; // <-- ИЗМЕНЕНИЕ 1
-
-// ИЗМЕНЕНИЕ 2: Мы удалили отсюда старый компонент-заглушку "MainContent"
+import EnhancedDashboard from './components/EnhancedDashboard'; // <-- ИЗМЕНЕНИЕ (убрал скобки)
+import EnhancedBusinessDashboard from './components/EnhancedBusinessDashboard'; // <-- ИЗМЕНЕНИЕ (убрал скобки)
 
 // Main App component that manages state
 export function App() {
@@ -101,7 +99,6 @@ export function App() {
   				  </div>
   			  </div>
   			  
-  			  {/* --- ИЗМЕНЕНИЕ 3: Вот здесь мы подключаем твои дашборды --- */}
   			  {appData.currentSpace === 'personal' ? (
   				<EnhancedDashboard 
   				  activeTab={appData.activeTab} 
@@ -113,7 +110,6 @@ export function App() {
   				  userId={userId} 
   				/>
   			  )}
-  			  {/* --- Конец ИЗМЕНЕНИЯ 3 --- */}
 
   		  </main>
   	  </div>
