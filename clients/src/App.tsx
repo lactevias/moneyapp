@@ -100,16 +100,18 @@ export function App() {
   			  </div>
   			  
   			  {appData.currentSpace === 'personal' ? (
-  				<EnhancedDashboard 
-  				  activeTab={appData.activeTab} 
-  				  userId={userId} 
-  				/>
-  			  ) : (
-  				<EnhancedBusinessDashboard 
-  				  activeTab={appData.activeTab} 
-  				  userId={userId} 
-  				/>
-  			  )}
+    <EnhancedDashboard
+      activeTab={appData.activeTab}
+      userId={userId}
+      transactions={transactions} 
+    />
+  ) : (
+    <EnhancedBusinessDashboard
+      activeTab={appData.activeTab}
+      userId={userId}
+      transactions={transactions} 
+    />
+  )}
 
   		  </main>
   	  </div>
