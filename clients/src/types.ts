@@ -18,22 +18,27 @@ export interface Transaction {
   category: string;
   amount: number;
   currency: string;
-  account: string;
-  accountId: string;
-  date: Date | Timestamp;
+  account: string; // Keep this if components rely on it
+  accountId: string; // The ID is more reliable
+  date: Date | Timestamp; // Can be Date or Timestamp from Firebase
   description?: string;
   space: Space;
   createdAt?: Timestamp;
   fee?: number;
-  transactionCurrency?: string;
+  transactionCurrency?: string; // If transaction currency differs
 }
 
 export interface Budget {
   id: string;
   category: string;
-  amount: number;
+  amount: number; // Budget limit
   space: Space;
   createdAt?: Timestamp;
+  // 'spent' is better calculated on the fly, not stored
+  // For BudgetCard compatibility if needed:
+  limit?: number; // Alias for amount
+  spent?: number; // Calculated value
+  period?: string; // Calculated value
 }
 
 export interface Goal {
@@ -43,17 +48,17 @@ export interface Goal {
   targetAmount: number;
   space: Space;
   createdAt?: Timestamp;
-  currency?: string;
+  currency?: string; // Goal currency if different
 }
 
 export interface PlannedPayment {
   id: string;
-  description: string;
+  description: string; // Payment name/title
   amount: number;
   currency: string;
-  date: Date | Timestamp;
+  date: Date | Timestamp; // Next payment date
   category: string;
-  accountId: string;
+  accountId: string; // Account ID for deduction
   space: Space;
   recurring?: boolean;
   recurrencePattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -61,6 +66,8 @@ export interface PlannedPayment {
   isRequired?: boolean;
   status?: 'planned' | 'confirmed';
   createdAt?: Timestamp;
+   // For compatibility with components expecting 'title'
+  title?: string;
 }
 
 export interface RecurringPayment {
@@ -70,7 +77,7 @@ export interface RecurringPayment {
   type: 'income' | 'expense';
   category: string;
   accountId: string;
-  dayOfMonth: number;
+  dayOfMonth: number; // Day of month for execution
   space: Space;
   createdAt?: Timestamp;
 }
@@ -79,21 +86,23 @@ export interface TaxPayment {
   id: string;
   name: string;
   amount: number;
-  dueDate: Date | Timestamp;
+  dueDate: Date | Timestamp; // Due date
   isPaid: boolean;
-  space: Space;
+  space: Space; // Should be 'business'
   createdAt?: Timestamp;
 }
 
+// Type for AI Assistant form
 export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
+// Type for transfers (if a separate entity exists)
 export interface MoneyTransfer {
   id: string;
-  fromAccount: string;
-  toAccount: string;
+  fromAccount: string; // Account name or ID
+  toAccount: string;   // Account name or ID
   amount: number;
   currency: string;
   date: Date | Timestamp;
@@ -103,15 +112,16 @@ export interface MoneyTransfer {
   createdAt?: Timestamp;
 }
 
+// Type for debts
 export interface Debt {
   id: string;
-  type: 'i_owe' | 'owed_to_me';
-  person: string;
+  type: 'i_owe' | 'owed_to_me'; // I owe / Owed to me
+  person: string; // To whom / From whom
   amount: number;
   currency: string;
   description?: string;
-  dueDate?: Date | Timestamp;
-  isPaid: boolean;
+  dueDate?: Date | Timestamp; // Return date
+  isPaid: boolean; // Is the debt settled?
   space: Space;
   createdAt?: Timestamp;
 }
