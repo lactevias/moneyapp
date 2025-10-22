@@ -73,7 +73,7 @@ export function App() {
 
     const handler = setTimeout(() => {
       const docRef = doc(db, 'users', userId);
-_      setDoc(docRef, { appData }).then(() => {
+      setDoc(docRef, { appData }).then(() => {
         console.log('Data saved.');
       });
     }, 1000); // Save 1 second after the last change
@@ -91,31 +91,4 @@ _      setDoc(docRef, { appData }).then(() => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
-          <div className="text-white text-lg">Загрузка данных...</div>
-      </div>
-    );
-  }
-
-  return (
-    <SidebarProvider>
-      <div className="flex h-screen bg-background">
-        <AppSidebar
-          activeTab={appData.activeTab}
-          onTabChange={handleTabChange}
-          currentSpace={appData.currentSpace}
-        />
-        <main className="flex-1 overflow-auto">
-          {/* Placeholder for mode toggle buttons */}
-          <div className="p-4 border-b border-border">
-             <div className="flex items-center justify-center gap-2 bg-gray-800 p-1 rounded-lg max-w-xs mx-auto">
-                <button onClick={() => handleSpaceChange('personal')} className={`w-full py-2 px-4 rounded-md text-sm font-semibold ${appData.currentSpace === 'personal' ? 'bg-primary text-white' : 'text-gray-300'}`}>Личное</button>
-                <button onClick={() => handleSpaceChange('business')} className={`w-full py-2 px-4 rounded-md text-sm font-semibold ${appData.currentSpace === 'business' ? 'bg-primary text-white' : 'text-gray-300'}`}>Бизнес</button>
-            </div>
-          </div>
-          <MainContent activeTab={appData.activeTab} currentSpace={appData.currentSpace} />
-        </main>
-      </div>
-    </SidebarProvider>
-  );
-}
+      <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify
