@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AppSidebar } from 'components/AppSidebar';
+import { AppSidebar } from './components/AppSidebar';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { db, auth } from 'firebaseConfig';
