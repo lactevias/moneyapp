@@ -4,8 +4,8 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { SidebarProvider } from "@/components/ui/sidebar";
-import EnhancedDashboard from './components/EnhancedDashboard'; // <-- ИЗМЕНЕНИЕ (убрал скобки)
-import EnhancedBusinessDashboard from './components/EnhancedBusinessDashboard'; // <-- ИЗМЕНЕНИЕ (убрал скобки)
+import EnhancedDashboard from './components/EnhancedDashboard';
+import EnhancedBusinessDashboard from './components/EnhancedBusinessDashboard'; 
 
 // Main App component that manages state
 export function App() {
