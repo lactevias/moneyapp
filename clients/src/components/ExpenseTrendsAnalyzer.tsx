@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from "lucide-react";
-import type { Transaction, Space } from "@/types"; // Убедись, что импортируешь типы
+import type { Transaction, Space } from "@/types";
 import { calculateMultiCurrencyTotal } from "@/lib/currency";
 
 interface ExpenseTrendsAnalyzerProps {
-  transactions?: Transaction[] | null; // Сделаем опциональным и разрешим null
+  transactions?: Transaction[] | null; // Made optional
   currentSpace: Space;
 }
 
@@ -21,12 +21,11 @@ interface CategoryTrend {
 
 export default function ExpenseTrendsAnalyzer({ transactions, currentSpace }: ExpenseTrendsAnalyzerProps) {
   const trends = useMemo(() => {
-    // --- ИСПРАВЛЕНИЕ: Добавляем проверку, что transactions это массив ---
+    // --- FIX: Add guard to check if transactions is an array ---
     if (!Array.isArray(transactions)) {
-      return []; // Возвращаем пустой массив, если данных нет
+      return []; // Return an empty array if data isn't ready
     }
-    // --- Конец ИСПРАВЛЕНИЯ ---
-
+    // --- End of FIX ---
 
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -94,7 +93,7 @@ export default function ExpenseTrendsAnalyzer({ transactions, currentSpace }: Ex
       } else if (trend.currentMonth > 0) {
         trend.change = 100;
       } else {
-        trend.change = 0; // Добавим случай, когда нет расходов в оба месяца
+        trend.change = 0;
       }
 
       trend.changeAmount = trend.currentMonth - trend.previousMonth;
@@ -243,36 +242,4 @@ export default function ExpenseTrendsAnalyzer({ transactions, currentSpace }: Ex
                     className="flex items-center justify-between p-3 rounded-lg border border-border hover-elevate"
                   >
                     <div className="flex-1">
-                      <div className="font-medium text-sm text-foreground mb-1">
-                        {trend.category}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatCurrency(trend.currentMonth)}
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="gap-1">
-                      <Minus className="h-3 w-3" />
-                      {formatPercentage(trend.change)}
-                    </Badge>
-                  </div>
-                ))}
-                {stableCategories.length > 3 && (
-                  <div className="text-xs text-muted-foreground text-center pt-1">
-                    +{stableCategories.length - 3} more
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {trends.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Not enough data for trend analysis</p>
-              <p className="text-xs mt-1">Add transactions for the current and previous month</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+                      <div className="font-medium
