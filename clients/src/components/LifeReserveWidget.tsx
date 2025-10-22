@@ -2,15 +2,16 @@ import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Shield, TrendingDown } from "lucide-react";
-import type { Transaction } from "@/types"; // Убедись, что импортируешь Transaction
+import type { Transaction } from "@/types";
 import { calculateMultiCurrencyTotal } from "@/lib/currency";
 
 interface LifeReserveWidgetProps {
-  totalBalance?: number; // Сделаем опциональным
-  transactions?: Transaction[] | null; // Сделаем опциональным и разрешим null
+  totalBalance?: number;
+  transactions?: Transaction[] | null;
   targetMonths?: number;
 }
 
+// Helper function (let's keep it simple for now)
 const formatCurrency = (amount: number, currency: string = 'RUB') => {
   const symbols: Record<string, string> = {
     RUB: '₽',
@@ -23,13 +24,13 @@ const formatCurrency = (amount: number, currency: string = 'RUB') => {
 };
 
 export default function LifeReserveWidget({
-  totalBalance = 0, // Добавим значение по умолчанию
-  transactions, // Убрали = [] здесь
+  totalBalance = 0,
+  transactions, // No default empty array here
   targetMonths = 6
 }: LifeReserveWidgetProps) {
 
   const analysis = useMemo(() => {
-    // --- ИСПРАВЛЕНИЕ: Добавляем проверку, что transactions это массив ---
+    // --- FIX: Check if transactions is actually an array ---
     if (!Array.isArray(transactions)) {
        return {
          monthlyAverage: 0,
@@ -39,11 +40,10 @@ export default function LifeReserveWidget({
          shortage: 0,
          isGood: false,
          isMedium: false,
-         isLow: true // По умолчанию считаем низким, пока нет данных
+         isLow: true // Default to low if no data
        };
     }
-    // --- Конец ИСПРАВЛЕНИЯ ---
-
+    // --- End of FIX ---
 
     const now = new Date();
     const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
@@ -55,10 +55,10 @@ export default function LifeReserveWidget({
     const totalExpenses = calculateMultiCurrencyTotal(recentExpenses);
     const monthlyAverage = totalExpenses / 3;
 
-    const monthsOfReserve = monthlyAverage > 0 ? totalBalance / monthlyAverage : Infinity; // Считаем бесконечным, если расходов нет
+    const monthsOfReserve = monthlyAverage > 0 ? totalBalance / monthlyAverage : Infinity;
 
     const targetReserve = monthlyAverage * targetMonths;
-    const reserveProgress = targetReserve > 0 ? (totalBalance / targetReserve) * 100 : 100; // 100% если цель 0
+    const reserveProgress = targetReserve > 0 ? (totalBalance / targetReserve) * 100 : 100;
 
     const shortage = Math.max(0, targetReserve - totalBalance);
     const isGood = monthsOfReserve >= targetMonths;
@@ -67,7 +67,7 @@ export default function LifeReserveWidget({
 
     return {
       monthlyAverage,
-      monthsOfReserve: monthsOfReserve === Infinity ? Infinity : monthsOfReserve, // Отображаем бесконечность
+      monthsOfReserve: monthsOfReserve === Infinity ? Infinity : monthsOfReserve,
       targetReserve,
       reserveProgress: Math.min(reserveProgress, 100),
       shortage,
@@ -134,4 +134,44 @@ export default function LifeReserveWidget({
         <div className="space-y-2 text-sm border-t border-border pt-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingDown className="h-3 w-3 text
+              <TrendingDown className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">Avg. Monthly Expense</span>
+            </div>
+            <span className="font-medium">{formatCurrency(analysis.monthlyAverage)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Current Balance</span>
+            <span className="font-medium">{formatCurrency(totalBalance)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Target Reserve</span>
+            <span className="font-medium text-primary">{formatCurrency(analysis.targetReserve)}</span>
+          </div>
+          {analysis.shortage > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Shortage</span>
+              <span className="font-medium text-destructive">{formatCurrency(analysis.shortage)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Status Message */}
+        {analysis.isGood && (
+          <div className="text-xs text-green-600 dark:text-green-400">
+            ✓ Excellent reserve! You're covered for {analysis.monthsOfReserve === Infinity ? 'a very long time' : `${analysis.monthsOfReserve.toFixed(1)} months`}.
+          </div>
+        )}
+        {analysis.isMedium && !analysis.isGood && (
+          <div className="text-xs text-yellow-600 dark:text-yellow-400">
+            ⚡ Reserve is okay, but aim for {targetMonths} months.
+          </div>
+        )}
+        {analysis.isLow && (
+          <div className="text-xs text-destructive">
+            ⚠️ Low reserve. Recommended to save for {targetMonths} months of expenses.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
