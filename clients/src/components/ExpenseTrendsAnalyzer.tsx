@@ -21,11 +21,10 @@ interface CategoryTrend {
 
 export default function ExpenseTrendsAnalyzer({ transactions, currentSpace }: ExpenseTrendsAnalyzerProps) {
   const trends = useMemo(() => {
-    // --- ВОТ ИСПРАВЛЕНИЕ: Проверяем, что transactions это массив ---
+    // Check if transactions is an array
     if (!Array.isArray(transactions)) {
-      return []; // Возвращаем пустой массив, если данных нет
+      return []; // Return an empty array if data isn't ready
     }
-    // --- Конец ИСПРАВЛЕНИЯ ---
 
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -263,7 +262,17 @@ export default function ExpenseTrendsAnalyzer({ transactions, currentSpace }: Ex
               </div>
             </div>
           )}
-
+          
+          {/* --- ВОТ ИСПРАВЛЕННЫЙ КОНЕЦ --- */}
           {trends.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Not enough data for
+              <p>Not enough data for trend analysis</p> 
+              <p className="text-xs mt-1">Add transactions for the current and previous month</p>
+            </div>
+          )}
+          {/* --- Конец ИСПРАВЛЕННОГО КОНЦА --- */}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
