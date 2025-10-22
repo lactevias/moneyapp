@@ -266,12 +266,4 @@ export default function ExpenseTrendsAnalyzer({ transactions, currentSpace }: Ex
 
           {trends.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Not enough data for trend analysis</p>
-              <p className="text-xs mt-1">Add transactions for the current and previous month</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+              <p>Not enough data for
