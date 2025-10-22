@@ -7,6 +7,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import EnhancedDashboard from './components/EnhancedDashboard';
 import EnhancedBusinessDashboard from './components/EnhancedBusinessDashboard';
 // <-- 2. Импортируем все наши типы данных
+import { LoadingSpinner } from './components/LoadingSpinner';
 import type { Transaction, Account, Budget, Goal, PlannedPayment } from './types'; 
 // <-- 3. Импортируем функцию для расчета валют
 import { calculateMultiCurrencyTotal, groupByCurrency } from './lib/currency'; 
@@ -193,12 +194,13 @@ export function App() {
   // --- Рендер компонента ---
 
   if (isLoading && !transactions.length) { // Показываем загрузку, пока не придет первая пачка данных
-    return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
-          <div className="text-white text-lg">Загрузка данных...</div>
-      </div>
-    );
-  }
+  return (
+    // Используем твой фон '--background' из index.css
+    <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+      <LoadingSpinner />
+    </div>
+  );
+}
 
   return (
     <SidebarProvider>
