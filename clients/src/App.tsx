@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'; // <-- 1. Добавили useMemo
+import { useState, useEffect, useMemo } from 'react';
 import { AppSidebar } from './components/AppSidebar';
 import { doc, setDoc, getDoc, collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
@@ -6,11 +6,9 @@ import { db, auth } from './firebaseConfig';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import EnhancedDashboard from './components/EnhancedDashboard';
 import EnhancedBusinessDashboard from './components/EnhancedBusinessDashboard';
-// <-- 2. Импортируем все наши типы данных
-import { LoadingSpinner } from './components/LoadingSpinner';
-import type { Transaction, Account, Budget, Goal, PlannedPayment } from './types'; 
-// <-- 3. Импортируем функцию для расчета валют
-import { calculateMultiCurrencyTotal, groupByCurrency } from './lib/currency'; 
+import type { Transaction, Account, Budget, Goal, PlannedPayment } from './types';
+import { calculateMultiCurrencyTotal, groupByCurrency } from './lib/currency';
+import { LoadingSpinner } from './components/LoadingSpinner'; // Импортируем наш лоадер
 
 // --- Main App component ---
 export function App() {
@@ -20,7 +18,6 @@ export function App() {
     currentSpace: 'personal' as 'personal' | 'business',
   });
   
-  // <-- 4. Создаем состояния для ВСЕХ наших данных
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -57,18 +54,20 @@ export function App() {
       } else {
         console.log("No previous app data found. Using default state.");
       }
-      setTimeout(() => setIsInitialLoad(false), 500);
+      // Не убираем isLoading здесь, ждем все данные
+      setTimeout(() => setIsInitialLoad(false), 500); // Позволяем сохранять изменения вскоре после загрузки настроек
     });
     
     return () => unsubscribe();
   }, [userId]);
 
-  // <-- 5. Универсальный эффект для загрузки коллекций (счетов, транзакций и т.д.)
+  // Универсальный эффект для загрузки коллекций
   useEffect(() => {
     if (!userId || !appData.currentSpace) return;
 
-    // Ставим "Загрузка..."
-    setIsLoading(true);
+    let activeSubscriptions = 0;
+    const expectedSubscriptions = 5; // Сколько коллекций мы грузим
+    setIsLoading(true); // Ставим загрузку в начале
 
     // Функция-помощник для подписки на коллекцию
     const subscribeToCollection = <T,>(collectionName: string, setter: React.Dispatch<React.SetStateAction<T[]>>) => {
@@ -76,26 +75,35 @@ export function App() {
       const q = query(collRef, where("space", "==", appData.currentSpace));
 
       return onSnapshot(q, (snapshot) => {
+        activeSubscriptions++; // Увеличиваем счетчик при получении данных
         const items = snapshot.docs.map(doc => {
           const data = doc.data();
           return {
             id: doc.id,
             ...data,
-            // Конвертируем Timestamp из Firebase в JS Date
             date: data.date instanceof Timestamp ? data.date.toDate() : (data.date ? new Date(data.date) : undefined),
             dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate() : (data.dueDate ? new Date(data.dueDate) : undefined),
           } as T;
         });
         
-        // Для транзакций сортируем по дате
         if (collectionName === 'transactions') {
           (items as Transaction[]).sort((a, b) => (b.date as Date).getTime() - (a.date as Date).getTime());
         }
         
         setter(items);
         console.log(`${collectionName} loaded for ${appData.currentSpace} space.`);
+        
+        // Если все подписки активны (т.е. загрузились хотя бы раз), убираем загрузку
+        if (activeSubscriptions >= expectedSubscriptions) {
+          setIsLoading(false);
+        }
+
       }, (error) => {
+        activeSubscriptions++; // Считаем ошибку как "завершенную" подписку, чтобы не висеть вечно
         console.error(`Error fetching ${collectionName}:`, error);
+        if (activeSubscriptions >= expectedSubscriptions) {
+          setIsLoading(false);
+        }
       });
     };
 
@@ -106,11 +114,6 @@ export function App() {
     const unsubGoals = subscribeToCollection<Goal>('goals', setGoals);
     const unsubPlannedPayments = subscribeToCollection<PlannedPayment>('plannedPayments', setPlannedPayments);
 
-    // Убираем "Загрузка..."
-    // (onSnapshot асинхронный, для простоты убираем загрузку сразу)
-    // В идеале нужен счетчик, но этого хватит
-    const timer = setTimeout(() => setIsLoading(false), 1500); // Даем 1.5с на загрузку
-
     // Отписываемся от всего при выходе
     return () => {
       unsubTransactions();
@@ -118,89 +121,53 @@ export function App() {
       unsubBudgets();
       unsubGoals();
       unsubPlannedPayments();
-      clearTimeout(timer);
     };
-  }, [userId, appData.currentSpace]); // Перезагружаем все, если поменялся пользователь или пространство
+  }, [userId, appData.currentSpace]);
 
-  // Эффект для сохранения настроек (вкладка, пространство)
+  // Эффект для сохранения настроек
   useEffect(() => {
     if (isInitialLoad || !userId) return;
 
     const handler = setTimeout(() => {
       const docRef = doc(db, 'users', userId);
       setDoc(docRef, { appData: { activeTab: appData.activeTab, currentSpace: appData.currentSpace } }, { merge: true })
-        .then(() => {
-          console.log('General app data saved.');
-        })
+        .then(() => { console.log('General app data saved.'); })
         .catch(error => console.error("Error saving app data:", error));
     }, 1000);
 
     return () => clearTimeout(handler);
   }, [appData.activeTab, appData.currentSpace, userId, isInitialLoad]);
 
-  
-  // --- 6. Расчеты в реальном времени (наконец-то!) ---
-
-  // Считаем балансы
-  const totalBalanceByCurrency = useMemo(() => {
-    return groupByCurrency(accounts);
-  }, [accounts]);
-
-  const totalBalance = useMemo(() => {
-    // Конвертируем все балансы в RUB (или базовую валюту)
-    const amounts = Object.entries(totalBalanceByCurrency)
-                          .map(([currency, amount]) => ({ amount, currency }));
-    return calculateMultiCurrencyTotal(amounts, 'RUB'); // Используем твою функцию
-  }, [totalBalanceByCurrency]);
-
-  // Считаем доходы/расходы за ТЕКУЩИЙ месяц
+  // --- Расчеты ---
+  const totalBalanceByCurrency = useMemo(() => groupByCurrency(accounts), [accounts]);
+  const totalBalance = useMemo(() => calculateMultiCurrencyTotal(accounts.map(a => ({ amount: a.balance, currency: a.currency })), 'RUB'), [accounts]);
   const [income, expenses, savings] = useMemo(() => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    // Фильтруем транзакции за этот месяц
     const monthlyTransactions = transactions.filter(t => (t.date as Date) >= startOfMonth);
-
-    const monthlyIncome = monthlyTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + calculateMultiCurrencyTotal([{ amount: t.amount, currency: t.currency }], 'RUB'), 0);
-      
-    const monthlyExpenses = monthlyTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + calculateMultiCurrencyTotal([{ amount: t.amount, currency: t.currency }], 'RUB'), 0);
-
+    const monthlyIncome = monthlyTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + calculateMultiCurrencyTotal([{ amount: t.amount, currency: t.currency }], 'RUB'), 0);
+    const monthlyExpenses = monthlyTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + calculateMultiCurrencyTotal([{ amount: t.amount, currency: t.currency }], 'RUB'), 0);
     return [monthlyIncome, monthlyExpenses, monthlyIncome - monthlyExpenses];
   }, [transactions]);
-  
   const goalsCount = useMemo(() => goals.length, [goals]);
 
   // --- Обработчики ---
-  
-  const handleTabChange = (tab: string) => {
-    setAppData(prevData => ({ ...prevData, activeTab: tab }));
-  };
-
+  const handleTabChange = (tab: string) => setAppData(prevData => ({ ...prevData, activeTab: tab }));
   const handleSpaceChange = (space: 'personal' | 'business') => {
-    // Сбрасываем все данные, чтобы не показывать старые
-    setTransactions([]);
-    setAccounts([]);
-    setBudgets([]);
-    setGoals([]);
-    setPlannedPayments([]);
+    // Сбрасываем все данные
+    setTransactions([]); setAccounts([]); setBudgets([]); setGoals([]); setPlannedPayments([]);
     setIsLoading(true); // Показываем загрузку
     setAppData(prevData => ({ ...prevData, currentSpace: space, activeTab: 'dashboard' }));
   }
 
-  // --- Рендер компонента ---
-
-  if (isLoading && !transactions.length) { // Показываем загрузку, пока не придет первая пачка данных
-  return (
-    // Используем твой фон '--background' из index.css
-    <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-      <LoadingSpinner />
-    </div>
-  );
-}
+  // --- Рендер ---
+  if (isLoading) { // Показываем лоадер, пока isLoading === true
+    return (
+      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -210,22 +177,22 @@ export function App() {
             onTabChange={handleTabChange}
             currentSpace={appData.currentSpace}
           />
+          {/* --- ВОТ ИЗМЕНЕНИЯ --- */}
           <main className="flex-1 overflow-auto">
-              {/* Переключатель Личное/Бизнес */}
-              <div className="p-4 border-b border-border">
-                  <div className="flex items-center justify-center gap-2 bg-gray-800 p-1 rounded-lg max-w-xs mx-auto">
-                      <button onClick={() => handleSpaceChange('personal')} className={`w-full py-2 px-4 rounded-md text-sm font-semibold ${appData.currentSpace === 'personal' ? 'bg-primary text-white' : 'text-gray-300'}`}>Личное</button>
-                      <button onClick={() => handleSpaceChange('business')} className={`w-full py-2 px-4 rounded-md text-sm font-semibold ${appData.currentSpace === 'business' ? 'bg-primary text-white' : 'text-gray-300'}`}>Бизнес</button>
-                  </div>
-              </div>
+            {/* Переключатель Личное/Бизнес - оставляем его во всю ширину */}
+            <div className="p-4 border-b border-border sticky top-0 bg-background z-10">
+                <div className="flex items-center justify-center gap-2 bg-gray-800 p-1 rounded-lg max-w-xs mx-auto">
+                    <button onClick={() => handleSpaceChange('personal')} className={`w-full py-2 px-4 rounded-md text-sm font-semibold ${appData.currentSpace === 'personal' ? 'bg-primary text-white' : 'text-gray-300'}`}>Личное</button>
+                    <button onClick={() => handleSpaceChange('business')} className={`w-full py-2 px-4 rounded-md text-sm font-semibold ${appData.currentSpace === 'business' ? 'bg-primary text-white' : 'text-gray-300'}`}>Бизнес</button>
+                </div>
+            </div>
 
-              {/* --- 7. Передаем настоящие данные в дашборды --- 
-              */}
+            {/* Контейнер для основного контента с отступами и ограничением ширины */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               {appData.currentSpace === 'personal' ? (
                 <EnhancedDashboard
                   activeTab={appData.activeTab}
-                  // @ts-ignore (userId может быть null на 1мс, это ок)
-                  userId={userId} 
+                  userId={userId}
                   transactions={transactions}
                   totalBalance={totalBalance}
                   totalBalanceByCurrency={totalBalanceByCurrency}
@@ -239,18 +206,18 @@ export function App() {
               ) : (
                 <EnhancedBusinessDashboard
                   activeTab={appData.activeTab}
-                  // @ts-ignore (userId может быть null на 1мс, это ок)
-                  userId={userId} 
+                  userId={userId}
                   transactions={transactions}
                   totalBalance={totalBalance}
                   totalBalanceByCurrency={totalBalanceByCurrency}
                   income={income}
                   expenses={expenses}
-                  netProfit={savings} // Для бизнеса "сбережения" = "чистая прибыль"
-                  // taxPayments={...} // Мы это еще не загружали
+                  netProfit={savings}
+                  // taxPayments={...}
                 />
               )}
-
+            </div>
+             {/* --- КОНЕЦ ИЗМЕНЕНИЙ --- */}
           </main>
       </div>
     </SidebarProvider>
